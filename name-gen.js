@@ -14,15 +14,6 @@ const makeURL = function(letter) {
     return 'https://api.datamuse.com/words?sp=' + letter + '????*&md=p';
 }
 
-const getRequest = function ( url, callback ) {
-    xhr = new XMLHttpRequest();
-
-    xhr.addEventListener('loadend', callback);
-    xhr.open('GET', url);
-    xhr.send();
-
-};
-
 const filter = function (arr, fn) {
     newArr = [];
 
@@ -43,7 +34,7 @@ const render = function() {
     document.body.innerText = data.words.join(" ");
 }
 
-const writeWord = function(word, tag){
+const writeWord = function(word, tag) {
     if (tag === "v") {
         data.words[0] = word;
     } else {
@@ -59,17 +50,19 @@ const writeWord = function(word, tag){
 const getWord = function(tag) {
     const letter = getRandomLetter();
     const url = makeURL(letter);
+   
+    simpleXhr('GET', url, 'JSON').done( 
+        function(response) {
+            console.log('in .done', tag);
+            const words = filter(response, function( obj ) {
+                return obj.tags === undefined ? false : obj.tags.includes(tag);
+            });
 
-    getRequest(url, function(response) {
-        const responseData = JSON.parse(response.target.responseText);
-        const words = filter(responseData, function( obj ) {
-            return obj.tags === undefined ? false : obj.tags.includes(tag);
-        });
-
-        const theWord = words[ getRandomInt(words.length-1) ].word;
-
-        writeWord(theWord, tag);
-    });
+            const theWord = words[ getRandomInt(words.length-1) ].word;
+            console.log(theWord);
+            writeWord(theWord, tag);
+        }
+    );
 }
 
 const getName = function() {
